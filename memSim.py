@@ -8,6 +8,12 @@ class TLB:
         self.queue = []
 
     def getAddress(self, virtualAddress):
+        for i in self.queue:
+            if i.virtual == virtualAddress:
+                return i
+    
+    def insert():
+        pass
 
 
 
@@ -16,6 +22,9 @@ class Entry:
     def __init__(self, virtual=0, physical=0):
         self.virtual = virtual
         self.physical = physical
+
+    def getAddress(self):
+        return self.physical
 
 def main():
     parser = argparse.ArgumentParser(description='Scheduler Simulator')
