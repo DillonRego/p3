@@ -1,10 +1,4 @@
 import argparse
-
-class PhysicalMemory:
-    def __init__(self, frames) -> None:
-        self.frames = frames
-        self.currentSize = 0
-        self.mem = []
     
 class TLB:
     def __init__(self):
@@ -17,31 +11,56 @@ class TLB:
             if i.virtual == virtualAddress:
                 return i
     
-    def insert():
+    def insert(self):
         pass
 
 class PageTable:
-    def __init__(self):
-        self.maxSize = 256
-        self.currentSize = 0
+    def __init__(self, algo, physMem):
+        self.table = [None] * 256
         self.queue = []
+        self.algo = algo
+        self.physMem = physMem
+        self.size = 0
+
+    def getFrame(self, address, history):
+        pageNum = address // 256
+        if table[pageNum] == 1:
+            return True
+
+        if self.algo == "FIFO":
+            if self.size < self.physMem:
+                table[pageNum] = 1
+                self.size += 1
+            else:
+                evictNum = self.queue.pop(0)
+                table[evictNum] = 0
+            self.queue.append(pageNum)
+
+
+
+
+
+
 
 class BackingStore:
     def __init__(self):
         self.maxSize = 65536
-        self.file = open("BACKING_STORE.bin", "r")
+        self.blockSize =256
+        self.data = []
 
-    def readfromfile(self, virtualAddress):
-        for i in range(virtualAddress/256, virtualAddress%256 + 1)
-        
-class Entry:
+    def readfromfile(self):
+        # Read the binary file
+        with open('BACKING_STORE.bin', 'rb') as file:
+            for _ in range(self.blockSize):
+                array_data = file.read(self.blockSize)
+                array = [byte for byte in array_data]
+                self.data.append(array)
 
-    def __init__(self, virtual=0, physical=0):
-        self.virtual = virtual
-        self.physical = physical
+    def getBlock(self, address):
+        return address // self.blockSize
 
-    def getAddress(self):
-        return self.physical
+
+
 
 def main():
     parser = argparse.ArgumentParser(description='Scheduler Simulator')
