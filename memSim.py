@@ -1,6 +1,11 @@
 import argparse
 
-
+class PhysicalMemory:
+    def __init__(self, frames) -> None:
+        self.frames = frames
+        self.currentSize = 0
+        self.mem = []
+    
 class TLB:
     def __init__(self):
         self.maxSize = 16
@@ -24,8 +29,11 @@ class PageTable:
 class BackingStore:
     def __init__(self):
         self.maxSize = 65536
-        self.file = open("BACKING_STORE.bin", "r+")
+        self.file = open("BACKING_STORE.bin", "r")
 
+    def readfromfile(self, virtualAddress):
+        for i in range(virtualAddress/256, virtualAddress%256 + 1)
+        
 class Entry:
 
     def __init__(self, virtual=0, physical=0):
