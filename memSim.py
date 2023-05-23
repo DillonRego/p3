@@ -15,7 +15,16 @@ class TLB:
     def insert():
         pass
 
+class PageTable:
+    def __init__(self):
+        self.maxSize = 256
+        self.currentSize = 0
+        self.queue = []
 
+class BackingStore:
+    def __init__(self):
+        self.maxSize = 65536
+        self.file = open("BACKING_STORE.bin", "r+")
 
 class Entry:
 
