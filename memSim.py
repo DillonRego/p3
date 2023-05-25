@@ -120,16 +120,22 @@ def main():
     tlbMiss = 0
     pageFault = 0
     for addr in addresses:
-        block, value = backingStore.getData(addr)
+        value = backingStore.getData(addr)
         if not tlb.getFrame(addr):
             tlbMiss += 1
-            if not pageTable.getFrame(addr):
+            result = pageTable.getFrame(addr)
+            if not result[0]:
                 pageFault += 1
 
-        integers = [str(addr), str(addr // 256), str(int3), str(int4)]
-        result = ', '.join(integers)
-
-        print(result)
+        integers = [str(addr), str(addr // 256), str(result[1]), str(value)]
+        formatedstr = ', '.join(integers)
+        print(formatedstr)
+    print("Number of Translated Addresses =" , len(addresses))
+    print("Page Faults =", pageFault)
+    print("Page Fault Rate =%3.3f" %(pageFault/len(addresses)))
+    print("TLB Hits =", len(addresses) - tlbMiss)
+    print("TLB Misses =", tlbMiss)
+    print("TLB Hit Rate =", (len(addresses) -  tlbMiss)/ len(addresses))
 if __name__ == '__main__':
     main()
 
