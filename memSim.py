@@ -30,10 +30,13 @@ class PageTable:
         self.physMem = physMem
         self.size = 0
 
+    def getFrameTlbHit(self, address):
+        return self.table[address // 256]
+
     def getFrame(self, address, history):
         pageNum = address // 256
         if self.table[pageNum] is not None:
-            return self.table[pageNum]
+            return True, self.table[pageNum]
 
         if self.algo == "FIFO":
             if self.size < self.physMem:
@@ -41,10 +44,11 @@ class PageTable:
                 self.size += 1
             else:
                 evictNum = self.queue.pop(0)
-                self.table[pageNum] = self.table[evictNum]
+                memLoc = self.table[evictNum]
+                self.table[pageNum] = memLoc
                 self.table[evictNum] = None
             self.queue.append(pageNum)
-            return False
+            return False, memLoc
 
         if self.algo == "OPT" or self.algo == "LRU":
             if self.size < self.physMem:
@@ -61,9 +65,10 @@ class PageTable:
                     if address // 256 in pageList:
                         pageList.remove(address // 256)
                 evictNum = pageList.pop(0)
-                self.table[pageNum] = self.table[evictNum]
+                memLoc = self.table[evictNum]
+                self.table[pageNum] = memLoc
                 self.table[evictNum] = None
-            return False
+            return False, memLoc
 
 
 class BackingStore:
@@ -104,7 +109,7 @@ def main():
 
     backingStore = BackingStore()
     pageTable = PageTable(args.pra, args.frames)
-    tlb = TLB()
+    tlb = TLB(args.frames)
 
     addresses = []
     with open(args.refFile, 'r') as file:
