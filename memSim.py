@@ -2,10 +2,10 @@ import argparse
 
 
 class TLB:
-    def __init__(self):
+    def __init__(self, physMem):
         self.table = [None] * 256
         self.queue = []
-        self.physMem = 16
+        self.physMem = min(16, physMem)
         self.size = 0
 
     def getFrame(self, address):
@@ -32,22 +32,23 @@ class PageTable:
 
     def getFrame(self, address, history):
         pageNum = address // 256
-        if self.table[pageNum] == 1:
-            return True
+        if self.table[pageNum] is not None:
+            return self.table[pageNum]
 
         if self.algo == "FIFO":
             if self.size < self.physMem:
-                self.table[pageNum] = 1
+                self.table[pageNum] = size
                 self.size += 1
             else:
                 evictNum = self.queue.pop(0)
-                self.table[evictNum] = 0
+                self.table[pageNum] = self.table[evictNum]
+                self.table[evictNum] = None
             self.queue.append(pageNum)
             return False
 
         if self.algo == "OPT" or self.algo == "LRU":
             if self.size < self.physMem:
-                self.table[pageNum] = 1
+                self.table[pageNum] = size
                 self.size += 1
             else:
                 pageList = []
@@ -60,14 +61,15 @@ class PageTable:
                     if address // 256 in pageList:
                         pageList.remove(address // 256)
                 evictNum = pageList.pop(0)
-                self.table[evictNum] = 0
+                self.table[pageNum] = self.table[evictNum]
+                self.table[evictNum] = None
             return False
 
 
 class BackingStore:
     def __init__(self):
         self.maxSize = 65536
-        self.blockSize =256
+        self.blockSize = 256
         self.data = []
         self.readfromfile()
 
@@ -79,8 +81,8 @@ class BackingStore:
                 self.data.append([byte for byte in array_data])
 
     def getData(self, address):
-        block = data[address // self.blockSize]
-        return block, block[address % self.blockSize]
+        block = self.data[address // self.blockSize]
+        return block.decode(), block[address % self.blockSize]
 
 
 
@@ -104,10 +106,25 @@ def main():
     pageTable = PageTable(args.pra, args.frames)
     tlb = TLB()
 
+    addresses = []
+    with open(args.refFile, 'r') as file:
+        for line in file:
+            integer = int(line.strip())
+            addresses.append(integer)
 
+    tlbMiss = 0
+    pageFault = 0
+    for addr in addresses:
+        block, value = backingStore.getData(addr)
+        if not tlb.getFrame(addr):
+            tlbMiss += 1
+            if not pageTable.getFrame(addr):
+                pageFault += 1
 
+        integers = [str(addr), str(addr // 256), str(int3), str(int4)]
+        result = ', '.join(integers)
 
-
+        print(result)
 if __name__ == '__main__':
     main()
 
