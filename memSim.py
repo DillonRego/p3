@@ -39,8 +39,10 @@ class PageTable:
             return True, self.table[pageNum]
 
         if self.algo == "FIFO":
+            memLoc = 0
             if self.size < self.physMem:
-                self.table[pageNum] = size
+                self.table[pageNum] = self.size
+                memLoc = self.size
                 self.size += 1
             else:
                 evictNum = self.queue.pop(0)
@@ -52,7 +54,8 @@ class PageTable:
 
         if self.algo == "OPT" or self.algo == "LRU":
             if self.size < self.physMem:
-                self.table[pageNum] = size
+                self.table[pageNum] = self.size
+                memLoc = self.size
                 self.size += 1
             else:
                 pageList = []
@@ -83,11 +86,11 @@ class BackingStore:
         with open('BACKING_STORE.bin', 'rb') as file:
             for _ in range(self.blockSize):
                 array_data = file.read(self.blockSize)
-                self.data.append([byte for byte in array_data])
+                self.data.append(array_data)
 
     def getData(self, address):
         block = self.data[address // self.blockSize]
-        return block.decode(), block[address % self.blockSize]
+        return block, block[address % self.blockSize]
 
 
 
@@ -120,22 +123,24 @@ def main():
     tlbMiss = 0
     pageFault = 0
     for addr in addresses:
-        value = backingStore.getData(addr)
+        block, value = backingStore.getData(addr)
         if not tlb.getFrame(addr):
             tlbMiss += 1
-            result = pageTable.getFrame(addr)
+            result = pageTable.getFrame(addr, None)
             if not result[0]:
                 pageFault += 1
 
-        integers = [str(addr), str(addr // 256), str(result[1]), str(value)]
+        integers = [str(addr), str(value), str(result[1]), str("".join([hex(byte)[2:].zfill(2) for byte in block]))]
         formatedstr = ', '.join(integers)
         print(formatedstr)
-    print("Number of Translated Addresses =" , len(addresses))
+    print("Number of Translated Addresses =", len(addresses))
     print("Page Faults =", pageFault)
-    print("Page Fault Rate =%3.3f" %(pageFault/len(addresses)))
+    print("Page Fault Rate = %3.3f" % (pageFault/len(addresses)))
     print("TLB Hits =", len(addresses) - tlbMiss)
     print("TLB Misses =", tlbMiss)
-    print("TLB Hit Rate =", (len(addresses) -  tlbMiss)/ len(addresses))
+    print("TLB Hit Rate =", (len(addresses) - tlbMiss) / len(addresses))
+
+
 if __name__ == '__main__':
     main()
 
