@@ -10,14 +10,14 @@ class TLB:
 
     def getFrame(self, address):
         pageNum = address // 256
-        if table[pageNum] == 1:
+        if self.table[pageNum] == 1:
             return True
         if self.size < self.physMem:
-            table[pageNum] = 1
+            self.table[pageNum] = 1
             self.size += 1
         else:
             evictNum = self.queue.pop(0)
-            table[evictNum] = 0
+            self.table[evictNum] = 0
         self.queue.append(pageNum)
         return False
 
@@ -32,27 +32,27 @@ class PageTable:
 
     def getFrame(self, address, history):
         pageNum = address // 256
-        if table[pageNum] == 1:
+        if self.table[pageNum] == 1:
             return True
 
         if self.algo == "FIFO":
             if self.size < self.physMem:
-                table[pageNum] = 1
+                self.table[pageNum] = 1
                 self.size += 1
             else:
                 evictNum = self.queue.pop(0)
-                table[evictNum] = 0
+                self.table[evictNum] = 0
             self.queue.append(pageNum)
             return False
 
         if self.algo == "OPT" or self.algo == "LRU":
             if self.size < self.physMem:
-                table[pageNum] = 1
+                self.table[pageNum] = 1
                 self.size += 1
             else:
                 pageList = []
-                for i in range(len(table)):
-                    if table[i] == 1:
+                for i in range(len(self.table)):
+                    if self.table[i] == 1:
                         pageList.append(i)
                 for address in history:
                     if len(pageList) == 1:
@@ -60,7 +60,7 @@ class PageTable:
                     if address // 256 in pageList:
                         pageList.remove(address // 256)
                 evictNum = pageList.pop(0)
-                table[evictNum] = 0
+                self.table[evictNum] = 0
             return False
 
 
