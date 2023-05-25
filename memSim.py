@@ -35,6 +35,35 @@ class PageTable:
                 evictNum = self.queue.pop(0)
                 table[evictNum] = 0
             self.queue.append(pageNum)
+            return False
+
+        if self.algo == "LRU":
+            if self.size < self.physMem:
+                table[pageNum] = 1
+                self.size += 1
+            else:
+                evictNum = self.queue.pop(0)
+                table[evictNum] = 0
+            self.queue.append(pageNum)
+            return False
+
+        if self.algo == "OPT":
+            if self.size < self.physMem:
+                table[pageNum] = 1
+                self.size += 1
+            else:
+                pageList = []
+                for i in range(len(table)):
+                    if table[i] == 1:
+                        pageList.append(i)
+                for address in history:
+                    if len(pageList) == 1:
+                        break
+                    if address // 256 in pageList:
+                        pageList.remove(address // 256)
+                evictNum = pageList.pop(0)
+                table[evictNum] = 0
+            return False
 
 
 
