@@ -130,15 +130,17 @@ def main():
         #if using least recently used, use the substring form that element backwards in reversed order
         elif pageTable.algo == "LRU":
             history = addresses[:i:-1]
+        else:
+            history = None
 
         block, value = backingStore.getData(addr)
         if not tlb.getFrame(addr):
             tlbMiss += 1
-            result = pageTable.getFrame(addr, None)
+            result = pageTable.getFrame(addr, history)
             if not result[0]:
                 pageFault += 1
 
-        integers = [str(addr), str(value), str(result[1]), "\n" + str("".join([hex(byte)[2:].zfill(2) for byte in block]).upper())]
+        integers = [str(addr), str(value) if value < 127 else str(value-256), str(result[1]), "\n" + str("".join([hex(byte)[2:].zfill(2) for byte in block]).upper())]
         formatedstr = ', '.join(integers)
         print(formatedstr)
     print("Number of Translated Addresses =", len(addresses))
