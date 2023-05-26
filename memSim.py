@@ -1,6 +1,5 @@
 import argparse
 
-
 class TLB:
     def __init__(self, physMem):
         self.table = [None] * 256
@@ -93,8 +92,6 @@ class BackingStore:
         return block, block[address % self.blockSize]
 
 
-
-
 def main():
     parser = argparse.ArgumentParser(description='Scheduler Simulator')
 
@@ -123,6 +120,17 @@ def main():
     tlbMiss = 0
     pageFault = 0
     for addr in addresses:
+        #TODO: test the below changes
+        #I am not fully confident they will work but it is something we can try
+        #get the index of the current address
+        i = addresses.index(addr)
+        #if using OPT, use the substring from that element forward
+        if pageTable.algo == "OPT":
+            history = addresses[i:]
+        #if using least recently used, use the substring form that element backwards in reversed order
+        elif pageTable.algo == "LRU":
+            history = addresses[:i:-1]
+
         block, value = backingStore.getData(addr)
         if not tlb.getFrame(addr):
             tlbMiss += 1
