@@ -99,7 +99,7 @@ def main():
     parser = argparse.ArgumentParser(description='Scheduler Simulator')
 
     # add arguments for the job file, algorithm, and quantum
-    parser.add_argument('refFile', metavar='job-file.txt', type=str,
+    parser.add_argument('refFile', metavar='addresses.txt', type=str,
                         help='list of addresses')
 
     parser.add_argument('frames', metavar='FRAMES', type=int,
@@ -130,7 +130,7 @@ def main():
             if not result[0]:
                 pageFault += 1
 
-        integers = [str(addr), str(value), str(result[1]), str("".join([hex(byte)[2:].zfill(2) for byte in block]))]
+        integers = [str(addr), str(value), str(result[1]), "\n" + str("".join([hex(byte)[2:].zfill(2) for byte in block]).upper())]
         formatedstr = ', '.join(integers)
         print(formatedstr)
     print("Number of Translated Addresses =", len(addresses))
