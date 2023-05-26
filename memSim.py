@@ -148,7 +148,7 @@ def main():
     print("Page Fault Rate = %3.3f" % (pageFault/len(addresses)))
     print("TLB Hits =", len(addresses) - tlbMiss)
     print("TLB Misses =", tlbMiss)
-    print("TLB Hit Rate =", (len(addresses) - tlbMiss) / len(addresses))
+    print("TLB Hit Rate = %3.3f" % ((len(addresses) - tlbMiss) / len(addresses)))
 
 
 if __name__ == '__main__':
