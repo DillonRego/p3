@@ -126,12 +126,14 @@ def main():
         i = addresses.index(addr)
         #if using OPT, use the substring from that element forward
         if pageTable.algo == "OPT":
-            history = addresses[i:]
+            history = addresses[i+1:]
         #if using least recently used, use the substring form that element backwards in reversed order
         elif pageTable.algo == "LRU":
-            history = addresses[:i:-1]
+            history = addresses[:i]
+            history.reverse()
         else:
             history = None
+        print(history)
 
         block, value = backingStore.getData(addr)
         if not tlb.getFrame(addr):
