@@ -1,24 +1,48 @@
 import argparse
 
 class TLB:
-    def __init__(self, physMem):
+    def __init__(self, algo, physMem):
         self.table = [None] * 256
         self.queue = []
         self.physMem = min(16, physMem)
+        self.algo = algo
         self.size = 0
 
-    def getFrame(self, address):
+    def getFrame(self, address, history):
         pageNum = address // 256
-        if self.table[pageNum] == 1:
+        if self.table[pageNum] is not None:
             return True
-        if self.size < self.physMem:
-            self.table[pageNum] = 1
-            self.size += 1
-        else:
-            evictNum = self.queue.pop(0)
-            self.table[evictNum] = 0
-        self.queue.append(pageNum)
-        return False
+        if self.algo == "FIFO":
+            if self.size < self.physMem:
+                self.table[pageNum] = 1
+                self.size += 1
+            else:
+                evictNum = self.queue.pop(0)
+                self.table[pageNum] = evictNum
+                self.table[evictNum] = None
+            self.queue.append(pageNum)
+            return False
+
+        if self.algo == "OPT" or self.algo == "LRU":
+            if self.size < self.physMem:
+                self.table[pageNum] = self.size
+                memLoc = self.size
+                self.size += 1
+            else:
+                pageList = []
+                for i in range(len(self.table)):
+                    if self.table[i] is not None:
+                        pageList.append(i)
+                for address in history:
+                    if len(pageList) == 1:
+                        break
+                    if address // 256 in pageList:
+                        pageList.remove(address // 256)
+                evictNum = pageList.pop(0)
+                memLoc = self.table[evictNum]
+                self.table[pageNum] = memLoc
+                self.table[evictNum] = None
+            return False
 
 
 class PageTable:
@@ -59,7 +83,7 @@ class PageTable:
             else:
                 pageList = []
                 for i in range(len(self.table)):
-                    if self.table[i] == 1:
+                    if self.table[i] is not None:
                         pageList.append(i)
                 for address in history:
                     if len(pageList) == 1:
@@ -109,7 +133,7 @@ def main():
 
     backingStore = BackingStore()
     pageTable = PageTable(args.pra, args.frames)
-    tlb = TLB(args.frames)
+    tlb = TLB(args.pra, args.frames)
 
     addresses = []
     with open(args.refFile, 'r') as file:
@@ -119,11 +143,7 @@ def main():
 
     tlbMiss = 0
     pageFault = 0
-    for addr in addresses:
-        #TODO: test the below changes
-        #I am not fully confident they will work but it is something we can try
-        #get the index of the current address
-        i = addresses.index(addr)
+    for i in range(len(addresses)):
         #if using OPT, use the substring from that element forward
         if pageTable.algo == "OPT":
             history = addresses[i+1:]
@@ -133,16 +153,16 @@ def main():
             history.reverse()
         else:
             history = None
-        print(history)
 
-        block, value = backingStore.getData(addr)
-        if not tlb.getFrame(addr):
+        block, value = backingStore.getData(addresses[i])
+        if not tlb.getFrame(addresses[i], history):
             tlbMiss += 1
-            result = pageTable.getFrame(addr, history)
-            if not result[0]:
+            result, memloc = pageTable.getFrame(addresses[i], history)
+            if not result:
                 pageFault += 1
-
-        integers = [str(addr), str(value) if value < 127 else str(value-256), str(result[1]), "\n" + str("".join([hex(byte)[2:].zfill(2) for byte in block]).upper())]
+        else:
+            memloc = pageTable.getFrameTlbHit(addresses[i])
+        integers = [str(addresses[i]), str(value) if value < 127 else str(value-256), str(memloc), "\n" + str("".join([hex(byte)[2:].zfill(2) for byte in block]).upper())]
         formatedstr = ', '.join(integers)
         print(formatedstr)
     print("Number of Translated Addresses =", len(addresses))
